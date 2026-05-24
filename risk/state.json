@@ -1,0 +1,13 @@
+{
+  "balance": 1000.0,
+  "open_trades": [],
+  "daily": {
+    "date": "2026-05-23",
+    "starting_cash": 1000.0,
+    "realized_pnl": 0.0,
+    "trades_taken": 0,
+    "wins": 0,
+    "losses": 0,
+    "halted": false
+  }
+}

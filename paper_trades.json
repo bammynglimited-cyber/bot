@@ -1,0 +1,86 @@
+[
+  {
+    "event": "OPENED",
+    "timestamp": "2026-05-19T05:42:13.972243+00:00",
+    "symbol": "ETH/USDT",
+    "direction": "BUY",
+    "entry": 2135.33,
+    "stop_loss": 2090.4877,
+    "tp1": 2202.5934,
+    "tp2": 2269.8568,
+    "size_usdt": 300.0,
+    "strategy": "Momentum (RSI+MACD)"
+  },
+  {
+    "event": "OPENED",
+    "timestamp": "2026-05-21T03:08:50.133497+00:00",
+    "symbol": "BTC/USDT",
+    "direction": "BUY",
+    "entry": 77960.97,
+    "stop_loss": 76902.3001,
+    "tp1": 79548.9749,
+    "tp2": 81136.9798,
+    "size_usdt": 300.0,
+    "strategy": "Breakout (BB+Vol)"
+  },
+  {
+    "event": "OPENED",
+    "timestamp": "2026-05-21T03:09:02.759255+00:00",
+    "symbol": "BNB/USDT",
+    "direction": "BUY",
+    "entry": 653.44,
+    "stop_loss": 643.8412,
+    "tp1": 667.8381,
+    "tp2": 682.2363,
+    "size_usdt": 300.0,
+    "strategy": "Breakout (BB+Vol)"
+  },
+  {
+    "event": "OPENED",
+    "timestamp": "2026-05-22T19:47:28.154781+00:00",
+    "symbol": "BTC/USDT",
+    "direction": "SELL",
+    "entry": 75770.5,
+    "stop_loss": 76903.7734,
+    "tp1": 74070.5899,
+    "tp2": 72370.6799,
+    "size_usdt": 300.0,
+    "strategy": "Trend (EMA+ADX) + Breakout (BB+Vol)"
+  },
+  {
+    "event": "OPENED",
+    "timestamp": "2026-05-22T19:53:53.823115+00:00",
+    "symbol": "ETH/USDT",
+    "direction": "SELL",
+    "entry": 2068.0,
+    "stop_loss": 2111.7983,
+    "tp1": 2002.3026,
+    "tp2": 1936.6052,
+    "size_usdt": 300.0,
+    "strategy": "Trend (EMA+ADX) + Breakout (BB+Vol)"
+  },
+  {
+    "event": "CLOSED",
+    "timestamp": "2026-05-23T04:23:54.443081+00:00",
+    "symbol": "BTC/USDT",
+    "direction": "SELL",
+    "entry": 75770.5,
+    "exit_price": 75580.7,
+    "reason": "MANUAL",
+    "pnl_usd": 0.75,
+    "pnl_pct": 0.25,
+    "strategy": "Trend (EMA+ADX) + Breakout (BB+Vol)"
+  },
+  {
+    "event": "CLOSED",
+    "timestamp": "2026-05-23T04:24:16.075087+00:00",
+    "symbol": "ETH/USDT",
+    "direction": "SELL",
+    "entry": 2068.0,
+    "exit_price": 2067.79,
+    "reason": "MANUAL",
+    "pnl_usd": 0.03,
+    "pnl_pct": 0.01,
+    "strategy": "Trend (EMA+ADX) + Breakout (BB+Vol)"
+  }
+]
