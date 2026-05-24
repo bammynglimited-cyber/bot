@@ -49,59 +49,103 @@ def _init(mode: str):
 # ── Process dashboard commands ─────────────────────────────────────────────────
 
 def job_process_commands():
-    """Check bot_commands table for instructions from the web dashboard."""
+    """Check Supabase for pending commands and execute them."""
     import database.supabase_db as db
 
     commands = db.get_pending_commands()
+    if not commands:
+        return
+
     for cmd in commands:
-        command = cmd.get("command")
-        payload = cmd.get("payload", {})
+        command = cmd.get("command") or cmd.get("cmd", "")
+        payload = cmd.get("payload") or cmd.get("params") or {}
         cmd_id  = cmd.get("id")
+
+        print(f"{Fore.CYAN}[CMD] Executing: {command} {payload}")
 
         try:
             if command == "pause":
-                print(f"{Fore.YELLOW}[CMD] Bot paused by dashboard")
                 if _risk_manager:
-                    _risk_manager.daily.halted = True
-                    _risk_manager._save_state()
+                    _risk_manager.is_halted = True
+                    _risk_manager._save()
+                print(f"{Fore.YELLOW}[CMD] Bot paused.")
 
             elif command == "resume":
-                print(f"{Fore.GREEN}[CMD] Bot resumed by dashboard")
                 if _risk_manager:
-                    _risk_manager.daily.halted = False
-                    _risk_manager._save_state()
+                    _risk_manager.is_halted = False
+                    _risk_manager._save()
+                print(f"{Fore.GREEN}[CMD] Bot resumed.")
+
+            elif command == "scan_now":
+                job_scan_and_signal()
+                print(f"{Fore.GREEN}[CMD] Manual scan triggered.")
 
             elif command == "close_all":
-                print(f"{Fore.YELLOW}[CMD] Closing all trades by request...")
                 if _trader and _risk_manager:
+                    prices = {}
                     from data.fetcher import get_current_price, get_exchange
-                    exchange = get_exchange()
+                    ex = get_exchange()
                     for trade in list(_risk_manager.open_trades):
-                        price = get_current_price(trade.symbol, exchange)
-                        _trader._execute_close(trade, price, "MANUAL")
+                        try:
+                            prices[trade.symbol] = get_current_price(trade.symbol, ex)
+                        except Exception:
+                            pass
+                    for trade in list(_risk_manager.open_trades):
+                        price = prices.get(trade.symbol, trade.entry)
+                        _trader._execute_close(trade, price, "manual_close")
+                print(f"{Fore.GREEN}[CMD] All trades closed.")
+
+            elif command == "set_mode":
+                mode = payload.get("mode", "paper")
+                global _signal_mode
+                _signal_mode = mode
+                print(f"{Fore.GREEN}[CMD] Mode set to: {mode}")
 
             elif command == "update_risk":
-                from config import settings
-                if payload.get("risk_per_trade"):
-                    settings.RISK_PER_TRADE = float(payload["risk_per_trade"])
-                if payload.get("max_open_trades"):
-                    settings.MAX_OPEN_TRADES = int(payload["max_open_trades"])
-                if payload.get("daily_loss_limit"):
-                    settings.DAILY_LOSS_LIMIT = float(payload["daily_loss_limit"])
-                if payload.get("min_votes"):
-                    settings.MIN_STRATEGY_VOTES = int(payload["min_votes"])
-                print(f"{Fore.CYAN}[CMD] Risk settings updated: {payload}")
+                if _risk_manager:
+                    if "risk_per_trade"   in payload:
+                        _risk_manager.risk_pct       = float(payload["risk_per_trade"])
+                    if "max_open_trades"  in payload:
+                        _risk_manager.max_trades     = int(payload["max_open_trades"])
+                    if "daily_loss_limit" in payload:
+                        _risk_manager.daily_loss_pct = float(payload["daily_loss_limit"])
+                    if "min_votes"        in payload:
+                        from config import settings as cfg
+                        cfg.MIN_STRATEGY_VOTES = int(payload["min_votes"])
+                    _risk_manager._save()
+                print(f"{Fore.GREEN}[CMD] Risk settings updated.")
 
-            elif command == "reload_keys":
-                print(f"{Fore.CYAN}[CMD] API key reload requested")
-                # Live trader will pick up new keys on next trade
+            elif command == "clear_cooldown":
+                from signals.deduplicator import SignalDeduplicator
+                dedup = SignalDeduplicator()
+                symbol = payload.get("symbol")
+                dedup.clear(symbol)
+                print(f"{Fore.GREEN}[CMD] Cooldowns cleared{' for ' + symbol if symbol else ''}.")
+
+            elif command == "add_pair":
+                symbol = payload.get("symbol")
+                if symbol:
+                    from config import settings as cfg
+                    if symbol not in cfg.WATCHLIST:
+                        cfg.WATCHLIST.append(symbol)
+                print(f"{Fore.GREEN}[CMD] Added {symbol} to watchlist.")
+
+            elif command == "remove_pair":
+                symbol = payload.get("symbol")
+                if symbol:
+                    from config import settings as cfg
+                    if symbol in cfg.WATCHLIST:
+                        cfg.WATCHLIST.remove(symbol)
+                print(f"{Fore.GREEN}[CMD] Removed {symbol} from watchlist.")
+
+            else:
+                print(f"{Fore.YELLOW}[CMD] Unknown command: {command}")
 
             db.mark_command_done(cmd_id, "done")
 
         except Exception as e:
-            print(f"{Fore.RED}[CMD] Command '{command}' failed: {e}")
-            db.mark_command_done(cmd_id, "failed")
-
+            print(f"{Fore.RED}[CMD] Error executing {command}: {e}")
+            db.mark_command_done(cmd_id, "error")
 
 # ── Main scan job ──────────────────────────────────────────────────────────────
 
