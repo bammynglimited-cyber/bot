@@ -115,6 +115,23 @@ def job_process_commands():
                     _risk_manager._save_state()
                 print(f"{Fore.GREEN}[CMD] Risk settings updated.")
 
+            elif command == "close_trade":
+                symbol = payload.get("symbol")
+                mode   = payload.get("mode", "paper")
+                if symbol and _trader and _risk_manager:
+                    from data.fetcher import get_current_price, get_exchange
+                    try:
+                        ex    = get_exchange()
+                        price = get_current_price(symbol, ex)
+                        _trader._execute_close(
+                            _risk_manager.get_trade(symbol), price, "manual_close"
+                        )
+                        print(f"{Fore.GREEN}[CMD] Trade closed: {symbol}")
+                    except Exception as e:
+                        print(f"{Fore.RED}[CMD] close_trade error: {e}")
+                else:
+                    print(f"{Fore.YELLOW}[CMD] close_trade: no open trade for {symbol}")        
+
             elif command == "clear_cooldown":
                 from signals.deduplicator import SignalDeduplicator
                 dedup = SignalDeduplicator()
