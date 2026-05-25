@@ -66,14 +66,14 @@ def job_process_commands():
         try:
             if command == "pause":
                 if _risk_manager:
-                    _risk_manager.is_halted = True
-                    _risk_manager._save()
+                    _risk_manager.daily_halted = True
+                    _risk_manager._save_state()
                 print(f"{Fore.YELLOW}[CMD] Bot paused.")
 
             elif command == "resume":
                 if _risk_manager:
-                    _risk_manager.is_halted = False
-                    _risk_manager._save()
+                    _risk_manager.daily_halted = False
+                    _risk_manager._save_state()
                 print(f"{Fore.GREEN}[CMD] Bot resumed.")
 
             elif command == "scan_now":
@@ -112,7 +112,7 @@ def job_process_commands():
                     if "min_votes"        in payload:
                         from config import settings as cfg
                         cfg.MIN_STRATEGY_VOTES = int(payload["min_votes"])
-                    _risk_manager._save()
+                    _risk_manager._save_state()
                 print(f"{Fore.GREEN}[CMD] Risk settings updated.")
 
             elif command == "clear_cooldown":
